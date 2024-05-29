@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="manifest" href="/static/manifest.json">
+</head>
+<body>
+    <h1>Определитель страха 👻:</h1>
+    <button id="detect"><h5>Начать работу</h5></button>
+    <div style="display: flex;">
+      <h3>Ваша эмоция в данный момент:</h3>
+      <h3 id="emotion"></h3>
+    </div>
+    <div style="display: flex;">
+      <h3>Наличие страха:</h3>
+      <h3 id="is-fear"></h3>
+    </div>
+    <!-- <video id="video" autoplay playsinline></video> -->
+    <!-- <canvas id="canvas" style="display:none;"></canvas> -->
+    <img id="output" />
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/js/service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                }).catch(function(error) {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+        const output = document.getElementById('output');
+        const emotionContainer = document.getElementById('emotion');
+        const isFearContainer = document.getElementById('is-fear');
+
+        document.getElementById('detect').onclick = function() {
+            socket.emit('get_emotion');
+        };
+
+        document.getElementById('end_detect').onclick = function() {
+            socket.emit('end_emotion');
+        };
+
+        socket.on('emotion', function(msg) {
+            const data = JSON.parse(msg)
+            console.log(data);
+            output.src = data.frame;
+
+            emotionContainer.textContent = `${data.emotion}`;
+            isFearContainer.textContent = `${data.emotion === 'Fear' ? "True" : "False"}`;
+        });
+    </script>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Emotion Detection</h1>
+    <button id="detect">Detect Emotion</button>
+    <button id="end_detect">End Emotion</button>
+
+    <ul id="container"></ul>
+
+    <script>
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        document.getElementById('detect').onclick = function() {
+            socket.emit('get_emotion');
+        };
+
+        document.getElementById('end_detect').onclick = function() {
+            socket.emit('end_emotion');
+        };
+
+        socket.on('emotion', function(msg) {
+            // Получаем ссылку на div с ID 'container'
+            var container = document.getElementById('container');
+
+            // Создаем новый элемент списка (ul)
+            // var ul = document.createElement('ul');
+
+            // Создаем элемент li и добавляем в него текст
+            var li = document.createElement('li');
+            li.textContent = 'Detected emotion: ' + msg.emotion;
+
+            // Добавляем li в ul
+            // ul.appendChild(li);
+
+            // Добавляем ul в container
+            // container.innerHTML += '<br>'; // Добавляем перенос строки для лучшей видимости
+            container.appendChild(li);
+        });
+
+    </script>
+</body>
+</html> -->
